@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life</title>
+
+    <script>
+        const grid_size = 80;
+        const sleep_ms = 100;
+        let is_mouse_pressed = false;
+        let is_simulation_running = false;
+        let cell_states = [];
+
+        window.onmousedown = () => {is_mouse_pressed = true;}
+        window.onmouseup = () => {is_mouse_pressed = false;}
+
+        function create_dead_cell()
+        {
+            let div = document.createElement("DIV");
+            div.className = "cell dead-cell";
+            div.setAttribute("isAlive", "false");
+            return div;
+        }
+
+        function create_alive_cell()
+        {
+            let div = document.createElement("DIV");
+            div.className = "cell alive-cell";
+            div.setAttribute("isAlive", "true");
+            return div;
+        }
+
+        function create_cells()
+        {
+            for(let i = 0; i < grid_size; i++)
+            {
+                for(let j = 0; j < grid_size; j++)
+                {
+                    let div = create_dead_cell();
+
+                    div.onmouseenter = () => 
+                    {
+                        if(is_mouse_pressed && !is_simulation_running)
+                            flip_cell_state(div);
+                    }
+
+                    div.onclick = () =>
+                    {
+                        if(!is_simulation_running)
+                            flip_cell_state(div);
+                    }
+
+                    document.body.appendChild(div);
+                }
+                let div = document.createElement("DIV");
+                    document.body.appendChild(div);
+            }
+        }
+
+        function flip_cell_state(cell)
+        {
+            let tmp = cell.getAttribute("isAlive");
+            if(tmp === "false")
+            {
+                cell.setAttribute("isAlive", "true");
+                cell.className = "cell alive-cell";
+            }
+            else
+            {
+                cell.setAttribute("isAlive", "false");
+                cell.className = "cell dead-cell";
+            }
+        }
+
+        function set_initial_cell_states()
+        {
+            let cells = document.querySelectorAll(".cell");
+            let size = cells.length;
+            cells.forEach(element => 
+            {
+                cell_states.push(element.getAttribute("isAlive") === "true");
+            });
+
+            cell_states = convert_to_2d_array(cell_states);
+        }
+
+        function  convert_to_2d_array(cells)
+        {
+            let result = new Array(grid_size);
+            for(let i = 0; i < grid_size; i++)
+                result[i] = new Array(grid_size);
+
+            for(let i = 0; i < grid_size; i++)
+            {
+                for(let j = 0; j < grid_size; j++)
+                {
+                    result[i][j] = cells[j + i * grid_size];
+                }
+            }
+            return result;
+        }
+
+        function begin_simulation()
+        {
+            if(!is_simulation_running)
+            {
+                is_simulation_running = true;
+                set_initial_cell_states();
+                setInterval(() => {simulate_step(); display_generation()}, sleep_ms);
+            }
+        }
+
+        function display_generation()
+        {
+            let cells = document.querySelectorAll(".cell");
+            for(let i = 0; i < grid_size; i++)
+            {
+                for(let j = 0; j < grid_size; j++)
+                {
+                    let cell = cells[j + i * grid_size];
+                    let previous_state = cell.getAttribute("isAlive") === "true";
+                    if(previous_state !== cell_states[i][j])
+                        flip_cell_state(cell);
+                }
+            }
+        }
+
+        function is_in_bounds(i, j)
+        {
+            let iBounds = i < grid_size && i >= 0;
+            let jBounds = j < grid_size && j >= 0;
+            return iBounds && jBounds;
+        }
+
+        function simulate_step()
+        {
+            let new_cell_states_generation = [];
+            for(let i = 0; i < grid_size; i++)
+                new_cell_states_generation[i] = new Array(grid_size);
+
+            for(let i = 0; i < grid_size; i++)
+            {
+                for(let j = 0; j < grid_size; j++)
+                {
+                    let neighbours_count = 0;
+
+                    for (let m = -1; m <= 1; m++)
+                        for (let n = -1; n <= 1; n++)
+                             if(is_in_bounds(i + m, j + n))
+                                if(m !== 0 || n !== 0)
+                                    if(cell_states[i+m][j+n])
+                                        neighbours_count += 1;
+
+                    if(neighbours_count === 3)
+                    {
+                        new_cell_states_generation[i][j] = true;
+                    }
+                    else if(neighbours_count === 2 && cell_states[i][j])
+                    {
+                        new_cell_states_generation[i][j] = true;
+                    }
+                    else
+                    {
+                        new_cell_states_generation[i][j] = false;
+                    }
+                }
+            }
+
+            cell_states = new_cell_states_generation;
+        }
+        
+        window.onload = () =>
+        {
+            create_cells();
+        }
+
+    </script>
+
+    <style>
+        body {
+            background-color: black;
+            white-space: nowrap;
+        }
+
+        button {
+            font-size: 20pt
+        }
+
+        .button-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        .cell {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin: 5px;
+            border-radius: 15%;
+        }
+
+        .dead-cell {
+            background-color: rgb(0, 82, 82);
+        }
+
+        .alive-cell {
+            background-color:burlywood;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="button-wrapper">
+        <button onclick="begin_simulation()">Start Simulation</button>
+    </div>
+    <grid></grid>
+</body>
+</html>
