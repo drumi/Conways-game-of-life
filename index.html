@@ -76,6 +76,7 @@
 
         function set_initial_cell_states()
         {
+            cell_states = [];
             let cells = document.querySelectorAll(".cell");
             let size = cells.length;
             cells.forEach(element => 
@@ -102,13 +103,31 @@
             return result;
         }
 
+        let interval_ref;
+        let is_first_entry = true;
         function begin_simulation()
         {
             if(!is_simulation_running)
             {
+                document.querySelector("button").innerText = "Stop Simulation"
                 is_simulation_running = true;
                 set_initial_cell_states();
-                setInterval(() => {simulate_step(); display_generation()}, sleep_ms);
+                if(is_first_entry)
+                {
+                    is_first_entry = false;
+                    intervalRef = setInterval(() => 
+                    { 
+                        if(is_simulation_running)
+                        {
+                            simulate_step(); display_generation()
+                        }
+                    }, sleep_ms);
+                }
+            }
+            else
+            {
+                document.querySelector("button").innerText = "Start Simulation"
+                is_simulation_running = false;
             }
         }
 
