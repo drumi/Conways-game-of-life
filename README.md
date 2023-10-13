@@ -4,4 +4,4 @@ Implementation of Conways game of life. Light up cells with mouse clicks, then p
 [wiki](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life)
 
 ## Glider Gun example
-![](https://github.com/drumi/drumi/blob/main/conway.gif)
+![](https://github.com/drumi/drumi/blob/main/images/conway.gif)
